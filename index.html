@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><title>Семейное древо</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--ink:#1f2433;--mute:#7a8094;--acc:#5b5bd6}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,Segoe UI,sans-serif;color:var(--ink);background:var(--bg);height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--card);border-bottom:1px solid #e6e8f0;flex-wrap:wrap}
+header h1{font-size:17px;margin:0 auto 0 0}.chk{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:4px;cursor:pointer;margin:0}
+input[type=checkbox]{width:auto}
+button{font:inherit;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;background:#eceefb;color:var(--acc);font-weight:600}
+button:hover{filter:brightness(.96)}button.p{background:var(--acc);color:#fff}button.d{background:#fdecec;color:#c0392b}
+main{flex:1;display:flex;min-height:0}#wrap{flex:1;overflow:auto;padding:30px}
+#tree{position:relative;display:block}
+.card{position:absolute;z-index:2;overflow:hidden;width:150px;height:166px;background:var(--card);border-radius:14px;padding:10px 8px;text-align:center;box-shadow:0 2px 10px #1f243314;cursor:pointer;border:2px solid transparent;line-height:1.3}
+.card.sel{border-color:var(--acc)}.card.m{border-top:4px solid #8fb4ff}.card.w{border-top:4px solid #ff9fc0}
+.card.dead::before{content:'';position:absolute;top:13px;left:-34px;width:100px;height:9px;background:#111;transform:rotate(-45deg);z-index:2}
+.tg{position:absolute;z-index:3;transform:translateX(-50%);min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#fff;border:1.5px solid var(--acc);color:var(--acc);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px #0002}
+.ph{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;background:#e8eaf3 center/cover;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--mute)}
+.card b,.card span{display:block;overflow:hidden}.card b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.card span{white-space:nowrap;text-overflow:ellipsis;font-weight:700;text-decoration:underline;text-underline-offset:2px}.card small{color:var(--mute)}
+svg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:visible}
+aside{width:320px;background:var(--card);border-left:1px solid #e6e8f0;padding:18px;overflow:auto}
+aside h2{font-size:15px;margin:0 0 6px}aside h3{font-size:13px;margin:22px 0 8px;color:var(--mute)}
+label{display:block;margin:10px 0 4px;color:var(--mute);font-size:12px}
+input,select{width:100%;padding:8px 10px;border:1px solid #dfe2ee;border-radius:8px;font:inherit;background:#fff}
+.btns{display:flex;gap:8px;margin-top:16px}.btns button{flex:1}
+#rel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pvr{display:flex;align-items:center;gap:10px}.pvr .ph{margin:0;flex:none}
+.sr{display:flex;gap:6px;align-items:center;margin-bottom:6px}.sr select{flex:1;min-width:0}.sr label{margin:0;display:flex;align-items:center;gap:3px;white-space:nowrap}.sr button{padding:4px 9px}
+#empty{color:var(--mute);margin:auto;text-align:center;padding-top:25vh}
+#md{position:fixed;inset:0;background:#1f243390;z-index:100;display:none;align-items:center;justify-content:center}.mb{background:#fff;border-radius:14px;padding:18px;width:min(560px,92vw);box-shadow:0 10px 40px #0004}.mb h3{margin:0 0 12px;font-size:16px}#mp img{display:block;width:100%;max-height:50vh;object-fit:contain;background:#f5f6fa;border-radius:8px;border:1px solid #e6e8f0}#mp pre{max-height:50vh;overflow:auto;background:#f5f6fa;padding:10px;border-radius:8px;font-size:12px;white-space:pre-wrap;margin:0}#mi{color:var(--mute);font-size:12px;margin-top:10px}
+#authgate{position:fixed;inset:0;background:#f5f6faee;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}.login-box{width:min(390px,100%);background:#fff;border:1px solid #e6e8f0;border-radius:18px;padding:26px;box-shadow:0 10px 40px #1f24331c}.login-box h2{margin:0 0 8px;font-size:21px}.login-box p{color:var(--mute);line-height:1.5}.login-box form{display:grid;gap:10px}.login-box label{margin:4px 0 0}.login-box #authmsg{min-height:20px;color:#9b3030;font-size:13px}.login-box .hint{font-size:12px;color:var(--mute);margin-top:14px}.account{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:12px;margin-left:4px}.account button{padding:7px 10px}#syncStatus{position:fixed;bottom:14px;right:14px;z-index:50;padding:8px 12px;border-radius:9px;background:#fff;box-shadow:0 2px 12px #1f243322;color:var(--mute);font-size:12px;display:none;max-width:min(460px,90vw)}
+.modal{position:fixed;inset:0;background:#1f243390;z-index:220;display:flex;align-items:center;justify-content:center;padding:20px}.dialog{background:#fff;border-radius:14px;padding:22px;width:min(420px,94vw);box-shadow:0 10px 40px #0004}.dialog h3{margin:0 0 12px}.dialog .hint{font-size:12px;color:var(--mute);line-height:1.5}.dialog [role=status]{min-height:20px;color:#9b3030;font-size:13px;margin-top:8px}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}header,aside,.tg{display:none}body,main{display:block;height:auto;background:#fff}#wrap{overflow:visible;padding:0}.card{box-shadow:none;border:1px solid #e0e3ee}}
+</style></head><body>
+<header><h1>🌳 Семейное древо</h1>
+<label class="chk"><input type="checkbox" id="v_g" onchange="setV('g',this.checked)">Границы поколений</label>
+<label class="chk"><input type="checkbox" id="v_l" onchange="setV('l',this.checked)">Линии родства</label>
+<label class="chk"><input type="checkbox" id="v_s" onchange="setV('s',this.checked)">Линии браков</label>
+<button onclick="colAll(true)">Свернуть ветви</button><button onclick="colAll(false)">Развернуть всё</button>
+<button onclick="newP()" class="p">+ Добавить</button>
+<button onclick="openF()">Открыть</button><button onclick="saveF()">Сохранить</button>
+<button onclick="expG()">GEDCOM</button><button onclick="expP()">PDF</button><span class="account"><span id="accountEmail"></span><button id="changePassword" onclick="showPasswordDialog()" style="display:none">Сменить пароль</button><button id="inviteMember" onclick="showInviteDialog()" style="display:none">Пригласить</button><button id="signOut" onclick="signOut()" style="display:none">Выйти</button></span></header>
+<main><div id="wrap"><div id="tree"></div></div>
+<aside><h2 id="ft">Новый человек</h2>
+<label>Фамилия</label><input id="f_surname"><label>Имя</label><input id="f_name">
+<label>Отчество (если есть)</label><input id="f_patr">
+<label>Пол</label><select id="f_sex"><option value="M">Мужской</option><option value="F">Женский</option></select>
+<label>Дата рождения</label><input id="f_birth" placeholder="ДД.ММ.ГГГГ или год">
+<label>Дата смерти</label><input id="f_death" placeholder="если умер(ла); дата неизвестна — «?»">
+<label>Фотография</label><div class="pvr"><div class="ph" id="pv">👤</div><input type="file" id="f_file" accept="image/*"></div>
+<button style="margin-top:6px;padding:4px 10px;font-size:12px" onclick="photo='';setPv();if(sel){byId(sel).photo='';store();render()}">Убрать фото</button>
+<label>Отец</label><select id="f_father"></select><label>Мать</label><select id="f_mother"></select>
+<label>Супруги / партнёры</label><div id="spl"></div>
+<button style="padding:4px 10px;font-size:12px" onclick="curSp.push({id:null,div:false});renderSp()">+ Добавить супруга(у)</button>
+<div class="btns"><button class="p" onclick="saveP()">Сохранить</button><button class="d" id="del" onclick="delP()">Удалить</button></div>
+<div id="rel"><h3 style="grid-column:1/3">Добавить родственника</h3>
+<button id="b_father" onclick="newRel('father')">+ Отец</button><button id="b_mother" onclick="newRel('mother')">+ Мать</button>
+<button onclick="newRel('spouse')">+ Супруг(а)</button><button onclick="newRel('child')">+ Ребёнок</button></div>
+</aside></main>
+<div id="md" onclick="if(event.target===this)mClose()"><div class="mb"><h3 id="mt"></h3><div id="mp"></div><div id="mi"></div><div class="btns"><button class="p" id="ms">Сохранить как…</button><button onclick="mClose()">Отмена</button></div></div></div>
+<div id="authgate"><div class="login-box"><h2>🌳 Семейное древо</h2><p>Войдите в аккаунт, который выдал владелец семейного древа.</p><form id="loginForm"><label for="loginEmail">Электронная почта</label><input id="loginEmail" type="email" autocomplete="username" required><label for="loginPassword">Пароль</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="p" type="submit">Войти</button></form><div id="authmsg" role="status"></div><div class="hint">Новая регистрация закрыта. Если у вас нет аккаунта или вы забыли пароль, попросите владельца помочь со входом.</div></div></div>
+<div id="inviteDialog" class="modal" style="display:none"><form id="inviteForm" class="dialog"><h3>Добавить аккаунт родственника</h3><label for="inviteName">Имя</label><input id="inviteName" required maxlength="100"><label for="inviteEmail">Электронная почта</label><input id="inviteEmail" type="email" autocomplete="off" required><label for="invitePassword">Временный пароль (не менее 10 символов)</label><input id="invitePassword" type="password" autocomplete="new-password" minlength="10" required><p class="hint">Аккаунт создаётся сразу. Передайте родственнику адрес сайта, почту и временный пароль лично.</p><div id="inviteMsg" role="status"></div><div class="btns"><button class="p" type="submit">Создать аккаунт</button><button type="button" onclick="closeInviteDialog()">Отмена</button></div></form></div>
+<div id="passwordDialog" class="modal" style="display:none"><form id="passwordChangeForm" class="dialog"><h3>Сменить пароль</h3><label for="oldPassword">Текущий пароль</label><input id="oldPassword" type="password" autocomplete="current-password" required><label for="newPassword">Новый пароль (не менее 10 символов)</label><input id="newPassword" type="password" autocomplete="new-password" minlength="10" required><div id="passwordMsg" role="status"></div><div class="btns"><button class="p" type="submit">Сохранить</button><button type="button" onclick="closePasswordDialog()">Отмена</button></div></form></div>
+<div id="syncStatus" role="status"></div>
+<script src="config.js"></script>
+<script>
+const $=i=>document.getElementById(i),F=k=>$('f_'+k);
+const ORN_SVG=(()=>{
+ const dots=(r,n,d,off=0)=>Array.from({length:n},(_,i)=>{const a=(i+off)*6.28318/n;return`<circle cx="${(r*Math.sin(a)).toFixed(1)}" cy="${(-r*Math.cos(a)).toFixed(1)}" r="${d}"/>`}).join('');
+ const rot=(n,t,off=0)=>Array.from({length:n},(_,i)=>`<g transform="rotate(${(360/n*i+off).toFixed(2)})">${t}</g>`).join('');
+ const leaf='<path d="M0 -300C30 -332 30 -380 0 -412C-30 -380 -30 -332 0 -300Z"/><path d="M0 -312V-396"/>';
+ const curl='<path d="M0 -300C0 -345 44 -366 56 -338C64 -316 34 -306 26 -326"/>';
+ const petal='<path d="M0 -130C34 -165 34 -215 0 -245C-34 -215 -34 -165 0 -130Z"/><path d="M0 -145V-228"/>';
+ const mini='<path d="M0 -34C14 -50 14 -70 0 -86C-14 -70 -14 -50 0 -34Z"/>';
+ const lines=`<circle r="430"/><circle r="418" stroke-width="2"/><circle r="270"/><circle r="254" stroke-width="2"/><circle r="104" stroke-width="5"/><circle r="92" stroke-width="2"/>`
+  +rot(8,leaf)+rot(8,curl+`<g transform="scale(-1,1)">${curl}</g>`,22.5)+rot(8,petal)+rot(8,mini,22.5);
+ const fills=dots(472,96,6)+dots(452,96,3.5,.5)+dots(286,48,4.5)+dots(66,16,4.5,.5)+rot(8,'<circle cy="-190" r="9"/>')+'<circle r="24"/>';
+ return`<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000"><defs><filter id="b" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="1.3"/></filter></defs><g transform="translate(500 500)" opacity=".14" filter="url(#b)" fill="#6b5230" stroke="none"><g fill="none" stroke="#6b5230" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${lines}</g>${fills}</g></svg>`})();
+const ORN_URI='data:image/svg+xml;utf8,'+encodeURIComponent(ORN_SVG);
+Object.assign($('wrap').style,{backgroundImage:`url("${ORN_URI}")`,backgroundSize:'72vmin',backgroundRepeat:'no-repeat',backgroundPosition:'center'});
+let P=[],sel=null,photo='',pend=null,curSp=[];
+try{localStorage.removeItem('tree')}catch{}
+let cloudUser=null,cloudRole='',cloudVersion=0,saveTimer=null,cloudSaving=false,cloudDirty=false,lastLoadedUser=null,pollTimer=null;
+const mig=()=>P.forEach(p=>{if(!p.sp){p.sp=p.spouse?[{id:p.spouse,div:!!p.div}]:[];delete p.spouse;delete p.div}});mig();
+const V=Object.assign({g:1,l:1,s:1},JSON.parse(localStorage.view||'{}'));
+const byId=i=>P.find(p=>p.id===i);
+const store=()=>{if(cloudUser){cloudDirty=true;clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,700)}};
+const E=s=>String(s||'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const short=p=>[p.name,p.patr].filter(Boolean).join(' ')||'Без имени';
+const full=p=>[p.surname,p.name,p.patr].filter(Boolean).join(' ')||'Без имени';
+const yr=s=>(s||'').match(/\d{4}/)?.[0]||'';
+const PAL=['#8b93d6','#d69b8b','#6fbf9f','#d1b64f','#b58bd6','#5fb0d6'];
+function setV(k,v){V[k]=v?1:0;localStorage.view=JSON.stringify(V);render()}
+['g','l','s'].forEach(k=>$('v_'+k).checked=!!V[k]);
+
+function levels(){const L={},adj={};P.forEach(p=>adj[p.id]=[]);
+ const e=(a,b,d)=>{if(adj[a]&&adj[b]){adj[a].push([b,d]);adj[b].push([a,-d])}};
+ P.forEach(p=>{if(p.father)e(p.father,p.id,1);if(p.mother)e(p.mother,p.id,1);if(p.father&&p.mother)e(p.father,p.mother,0);p.sp.forEach(x=>e(p.id,x.id,0))});
+ P.forEach(p=>{if(L[p.id]!=null)return;const c=[p.id];L[p.id]=0;
+  for(let i=0;i<c.length;i++)adj[c[i]].forEach(([q,d])=>{if(L[q]==null){L[q]=L[c[i]]+d;c.push(q)}});
+  const m=Math.min(...c.map(i=>L[i]));c.forEach(i=>L[i]-=m)});return L}
+const bk=p=>{const s=(p&&p.birth)||'';let m=s.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);if(m)return+m[3]*1e4+m[2]*100+ +m[1];m=s.match(/\d{4}/);return m?+m[0]*1e4+600:1e9};
+const seq=(p,seen)=>{seen.add(p.id);const Ls=[],Rs=[];
+ p.sp.forEach(x=>{const q=byId(x.id);if(!q||seen.has(q.id))return;(x.div?Ls:Rs).push(seq(q,seen))});return[...Ls.flat(),p,...Rs.flat()]};
+const isDesc=(d,a,seen=new Set())=>{if(seen.has(d))return false;seen.add(d);const p=byId(d);return !!p&&[p.father,p.mother].some(x=>x&&(x===a||isDesc(x,a,seen)))};
+let CLM={},LAY=null;
+function togB(id){const c=CLM[id];if(!c)return;const v=!c.m.some(q=>q.collapsed);c.m.forEach(q=>q.collapsed=v);store();render()}
+function colAll(v){Object.values(CLM).forEach(c=>{if(!v||c.par)c.m.forEach(q=>q.collapsed=v&&c.kids.length>0)});store();render()}
+
+function render(print){const T=$('tree'),W=150,H=166,GC=22,GS=40,GR=60,gy=(V.g||V.l)?70:36;T.innerHTML='';
+ if(!P.length){T.style.cssText='';T.innerHTML='<div id="empty">Древо пусто.<br>Нажмите «+ Добавить», чтобы создать первого человека.</div>';return}
+ const L=levels(),fk=p=>(p.father||'')+'|'+(p.mother||''),cl=[],cof={};
+ P.forEach(p=>{if(cof[p.id])return;const comp=[p],seen=new Set([p.id]);
+  for(let i=0;i<comp.length;i++)comp[i].sp.forEach(x=>{const q=byId(x.id);if(q&&!seen.has(q.id)){seen.add(q.id);comp.push(q)}});
+  const piv=comp.slice().sort((a,b)=>b.sp.length-a.sp.length||a.id-b.id)[0],m=seq(piv,new Set()),c={m,kids:[],par:null};
+  c.cw=m.length*W+(m.length-1)*GC;c.col=m.some(q=>q.collapsed);m.forEach(q=>cof[q.id]=c);cl.push(c)});
+ CLM=cof;
+ cl.forEach(c=>{const cand=c.m.filter(q=>byId(q.father)||byId(q.mother)).sort((a,b)=>(byId(a.father)?0:1)-(byId(b.father)?0:1));
+  for(const q of cand){const pc=cof[(byId(q.father)||byId(q.mother)).id];if(pc!==c){c.par=pc;c.anc=q;pc.kids.push(c);break}}});
+ cl.forEach(c=>c.kids.sort((a,b)=>bk(a.anc)-bk(b.anc)||a.anc.id-b.anc.id));
+ const hasKids=c=>c.m.some(q=>P.some(k=>k.father===q.id||k.mother===q.id)),inl=c=>!c.kids.length&&hasKids(c);
+ const roots=cl.filter(c=>!c.par),mark=c=>{c.vis=true;if(!c.col)c.kids.forEach(k=>{if(!k.vis)mark(k)})};
+ roots.filter(c=>!inl(c)).forEach(mark);
+ roots.filter(inl).forEach(c=>{if(c.m.some(q=>P.some(k=>(k.father===q.id||k.mother===q.id)&&cof[k.id].vis)))c.vis=true});
+ const ks=c=>c.col?[]:c.kids.filter(k=>k.vis);
+ const slot=c=>{if(c.sw!=null)return c.sw;c.sw=c.cw;const k=ks(c);k.forEach(slot);c.kw=k.length?k.reduce((s,x)=>s+x.sw,0)+GS*(k.length-1):0;return c.sw=Math.max(c.cw,c.kw)};
+ const place=(c,x0)=>{const k=ks(c);let cx=x0+(c.sw-c.kw)/2;k.forEach(q=>{place(q,cx);cx+=q.sw+GS});
+  c.x=k.length?Math.max(x0,Math.min(((k[0].x+k[0].cw/2)+(k[k.length-1].x+k[k.length-1].cw/2))/2-c.cw/2,x0+c.sw-c.cw)):x0+(c.sw-c.cw)/2};
+ const minLv=c=>Math.min(...c.m.map(q=>L[q.id]));
+ const order=roots.filter(c=>c.vis).sort((a,b)=>(inl(a)-inl(b))||minLv(a)-minLv(b)||bk(a.m[0])-bk(b.m[0]));
+ let x=0;order.forEach(c=>{slot(c);place(c,x);x+=c.sw+GR});const totalW=Math.max(0,x-GR);
+ const vc=cl.filter(c=>c.vis&&c.x!=null),vp=vc.flatMap(c=>c.m);
+ const ord=[...new Set(vp.map(p=>L[p.id]))].sort((a,b)=>a-b),rowTop=ord.map((_,i)=>i*(H+gy));
+ const wrapW=$('wrap').clientWidth-60,off=print?0:Math.max(0,(wrapW-totalW)/2),pos={};
+ T.style.width=Math.max(totalW,print?0:wrapW)+'px';T.style.height=(ord.length*(H+gy)-gy+30)+'px';
+ vc.forEach(c=>c.m.forEach((p,i)=>pos[p.id]={x:off+c.x+i*(W+GC),y:rowTop[ord.indexOf(L[p.id])]}));
+ vp.forEach(p=>{const q=pos[p.id],c=document.createElement('div');
+  c.className='card '+(p.sex==='M'?'m':'w')+(p.id===sel?' sel':'')+(p.death?' dead':'');c.style.left=q.x+'px';c.style.top=q.y+'px';c.title=full(p);
+  c.innerHTML=`<div class="ph" style="${p.photo?`background-image:url(${p.photo})`:''}">${p.photo?'':'👤'}</div><b>${E(short(p))}</b><span>${E(p.surname)||'&nbsp;'}</span><small>${yr(p.birth)}${p.death?' – '+(yr(p.death)||'?'):''}</small>`;
+  c.onclick=()=>select(p.id);T.appendChild(c)});
+ const cnt=c=>c.kids.reduce((s,k)=>s+k.m.length+cnt(k),0);
+ vc.forEach(c=>{if(!c.kids.length)return;const t=document.createElement('div'),y=pos[c.m[0].id].y+H+5;t.className='tg';
+  t.style.left=(off+c.x+c.cw/2)+'px';t.style.top=y+'px';t.textContent=c.col?'+'+cnt(c):'−';t.title=c.col?'Показать ветвь':'Скрыть ветвь';
+  t.onclick=()=>togB(c.m[0].id);T.appendChild(t)});
+ let bands='',links='';const LP=[],LB=[];const lk=(d,st,w,dash)=>{LP.push({d,st,w,dash});links+=`<path d="${d}" stroke="${st}" stroke-width="${w}" ${dash?'stroke-dasharray="5 4"':''}/>`};
+ if(V.g)ord.forEach((_,r)=>{if(r<1)return;const y=rowTop[r]-gy/2;LB.push(y);
+  bands+=`<line x1="0" x2="${T.style.width.replace('px','')}" y1="${y}" y2="${y}" stroke="#5b5bd6" stroke-opacity=".18" stroke-width="10" stroke-linecap="round"/>`});
+ if(V.l){const fam={},byR={};
+  vp.forEach(p=>{if(p.father||p.mother)(fam[fk(p)]=fam[fk(p)]||{ids:[p.father,p.mother],kids:[]}).kids.push(p)});
+  Object.values(fam).forEach(f=>{f.ps=f.ids.map(i=>pos[i]).filter(Boolean);if(!f.ps.length)return;
+   f.px=f.ps.reduce((s,q)=>s+q.x+W/2,0)/f.ps.length;f.r=Math.min(...f.kids.map(k=>ord.indexOf(L[k.id])));if(f.r<1)return;(byR[f.r]=byR[f.r]||[]).push(f)});
+  let n=0;Object.entries(byR).forEach(([r,fl])=>{r=+r;fl.sort((a,b)=>a.px-b.px);fl.forEach((f,i)=>{
+   const py=Math.max(...f.ps.map(q=>q.y+H)),prev=rowTop[r-1]+H,bus=prev+(rowTop[r]-prev)*(.62+.1*(i%4)),xs=[f.px,...f.kids.map(k=>pos[k.id].x+W/2)];
+   const hi=sel!=null&&(f.ids.includes(sel)||f.kids.some(k=>k.id===sel));
+   lk(`M${f.px} ${py}V${bus}M${Math.min(...xs)} ${bus}H${Math.max(...xs)}${f.kids.map(k=>{const q=pos[k.id];return`M${q.x+W/2} ${bus}V${q.y}`}).join('')}`,hi?'#5b5bd6':PAL[n++%PAL.length],hi?3:2)})})}
+ if(V.s)vc.forEach(c=>{for(let i=0;i<c.m.length-1;i++){const a=c.m[i],b=c.m[i+1],x=a.sp.find(z=>z.id===b.id);if(!x)continue;
+  const A=pos[a.id],B=pos[b.id],y=A.y+H/2;
+  lk(`M${A.x+W} ${y}H${B.x}`,x.div?'#d98a8a':'#5b5bd6',2,x.div)}});
+ const sv=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ sv.innerHTML=bands+`<g fill="none" stroke="#c5c9d8" stroke-width="2">${links}</g>`;T.insertBefore(sv,T.firstChild);LAY={vp,pos,LP,LB,w:totalW,h:ord.length*(H+gy)-gy}}
+
+function fill(){const o=sex=>'<option value="">— нет —</option>'+P.filter(p=>p.id!==sel&&(!sex||p.sex===sex)).map(p=>`<option value="${p.id}">${E(full(p))}</option>`).join('');
+ F('father').innerHTML=o('M');F('mother').innerHTML=o('F')}
+function renderSp(){const opts=v=>'<option value="">— выберите —</option>'+P.filter(q=>q.id!==sel).map(q=>`<option value="${q.id}"${q.id===v?' selected':''}>${E(full(q))}</option>`).join('');
+ $('spl').innerHTML=curSp.map((x,i)=>`<div class="sr"><select onchange="curSp[${i}].id=+this.value||null">${opts(x.id)}</select><label><input type="checkbox" ${x.div?'checked':''} onchange="curSp[${i}].div=this.checked">развод</label><button class="d" onclick="curSp.splice(${i},1);renderSp()">×</button></div>`).join('')}
+function setPv(){$('pv').style.backgroundImage=photo?`url(${photo})`:'';$('pv').textContent=photo?'':'👤'}
+function select(id){sel=id;pend=null;fill();const p=byId(id);
+ ['name','surname','patr','sex','birth','death'].forEach(k=>F(k).value=p[k]||'');
+ ['father','mother'].forEach(k=>F(k).value=p[k]||'');curSp=JSON.parse(JSON.stringify(p.sp));renderSp();
+ photo=p.photo||'';setPv();F('file').value='';$('ft').textContent='Редактирование';$('del').style.display='';
+ $('rel').style.display='grid';$('b_father').style.display=p.father?'none':'';$('b_mother').style.display=p.mother?'none':'';render()}
+function newP(){sel=null;pend=null;fill();['name','surname','patr','birth','death'].forEach(k=>F(k).value='');F('sex').value='M';
+ ['father','mother'].forEach(k=>F(k).value='');curSp=[];renderSp();photo='';setPv();F('file').value='';
+ $('ft').textContent='Новый человек';$('del').style.display='none';$('rel').style.display='none';render();F('surname').focus()}
+function newRel(k){const of=byId(sel);if(!of)return;newP();pend={k,of:of.id};
+ F('sex').value={father:'M',mother:'F',spouse:of.sex==='M'?'F':'M',child:'M'}[k];
+ const cur=byId((of.sp.find(x=>!x.div)||of.sp[of.sp.length-1]||{}).id);
+ if(k==='father')F('surname').value=of.surname||'';
+ if(k==='spouse'){curSp=[{id:of.id,div:false}];renderSp()}
+ if(k==='child'){const dad=of.sex==='M'?of:cur,mom=of.sex==='M'?cur:of;
+  if(dad&&dad.sex==='M'){F('father').value=dad.id;F('surname').value=dad.surname||''}
+  if(mom&&mom.sex==='F')F('mother').value=mom.id}
+ $('ft').textContent='Новый '+{father:'отец',mother:'мать',spouse:'супруг(а)',child:'ребёнок'}[k]+' для: '+short(of)}
+
+F('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onerror=()=>alert('Не удалось прочитать файл');
+ r.onload=()=>{const im=new Image();im.onerror=()=>alert('Не удалось открыть изображение (формат не поддерживается)');
+  im.onload=()=>{const z=Math.min(im.width,im.height),o=Math.min(z,240),c=document.createElement('canvas');c.width=c.height=o;
+   c.getContext('2d').drawImage(im,(im.width-z)/2,(im.height-z)/2,z,z,0,0,o,o);
+   photo=c.toDataURL('image/jpeg',.85);setPv();if(sel){byId(sel).photo=photo;store();render()}};
+  im.src=r.result};r.readAsDataURL(f)};
+
+function saveP(){const fa=+F('father').value||null,mo=+F('mother').value||null;
+ if(sel&&[fa,mo].some(x=>x&&(x===sel||isDesc(x,sel))))return alert('Нельзя выбрать потомка (или самого человека) в качестве родителя');
+ const isNew=!sel,p=isNew?{id:Math.max(0,...P.map(x=>x.id))+1,sp:[]}:byId(sel);
+ Object.assign(p,{name:F('name').value.trim(),patr:F('patr').value.trim(),surname:F('surname').value.trim(),sex:F('sex').value,
+  birth:F('birth').value.trim(),death:F('death').value.trim(),photo,father:+F('father').value||null,mother:+F('mother').value||null});
+ P.forEach(q=>q.sp=q.sp.filter(x=>x.id!==p.id));
+ const seen=new Set();p.sp=curSp.filter(x=>x.id&&x.id!==p.id&&byId(x.id)&&!seen.has(x.id)&&seen.add(x.id)).map(x=>({id:x.id,div:!!x.div}));
+ p.sp.forEach(x=>byId(x.id).sp.push({id:p.id,div:x.div}));
+ if(isNew){P.push(p);if(pend){const of=byId(pend.of);(CLM[of.id]?CLM[of.id].m:[of]).forEach(q=>q.collapsed=false);
+  if(pend.k==='father'||pend.k==='mother'){of[pend.k]=p.id;const o=byId(pend.k==='father'?of.mother:of.father);
+   if(o&&!o.sp.length&&!p.sp.length){p.sp.push({id:o.id,div:false});o.sp.push({id:p.id,div:false})}}}}
+ store();select(p.id)}
+function delP(){if(!sel||!confirm('Удалить '+full(byId(sel))+'?'))return;
+ P=P.filter(p=>p.id!==sel);P.forEach(p=>{['father','mother'].forEach(k=>{if(p[k]===sel)p[k]=null});p.sp=p.sp.filter(x=>x.id!==sel)});store();newP()}
+
+const MON='JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split(' ');
+const gd=s=>{const m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);return m?`${+m[1]} ${MON[m[2]-1]} ${m[3]}`:s};
+function gedcom(){const o=['0 HEAD','1 SOUR FamilyTreeApp','1 GEDC','2 VERS 5.5.1','2 FORM LINEAGE-LINKED','1 CHAR UTF-8'],fam={};
+ const get=(h,w)=>fam[h+'|'+w]=fam[h+'|'+w]||{h,w,c:[]};
+ P.forEach(p=>{if(p.father||p.mother)get(p.father||'',p.mother||'').c.push(p.id);
+  p.sp.forEach(x=>{const s=byId(x.id);if(!s||p.id>s.id)return;const[h,w]=p.sex==='F'&&s.sex!=='F'?[s.id,p.id]:[p.id,s.id];get(h,w).div=!!x.div})});
+ const Fs=Object.values(fam),fs={},fc={};
+ Fs.forEach((f,i)=>{[f.h,f.w].filter(Boolean).forEach(x=>(fs[x]=fs[x]||[]).push(i+1));f.c.forEach(x=>(fc[x]=fc[x]||[]).push(i+1))});
+ P.forEach(p=>{o.push(`0 @I${p.id}@ INDI`,`1 NAME ${[p.name,p.patr].filter(Boolean).join(' ')} /${p.surname||''}/`,`1 SEX ${p.sex}`);
+  if(p.birth)o.push('1 BIRT','2 DATE '+gd(p.birth));if(p.death)o.push('1 DEAT',p.death==='?'?'2 DATE':'2 DATE '+gd(p.death));
+  (fc[p.id]||[]).forEach(i=>o.push(`1 FAMC @F${i}@`));(fs[p.id]||[]).forEach(i=>o.push(`1 FAMS @F${i}@`))});
+ Fs.forEach((f,i)=>{o.push(`0 @F${i+1}@ FAM`);if(f.h)o.push(`1 HUSB @I${f.h}@`);if(f.w)o.push(`1 WIFE @I${f.w}@`);
+  if(f.div)o.push('1 DIV Y');f.c.forEach(c=>o.push(`1 CHIL @I${c}@`))});
+ o.push('0 TRLR');return o.join('\n').replace(/\n2 DATE(?=\n|$)/g,'')}
+const dl=(name,data,type)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click()};
+function mClose(){$('md').style.display='none';$('mp').innerHTML=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')mClose()});
+async function saveBlob(name,blob,mime,ext,desc){
+ if(window.showSaveFilePicker){try{const h=await showSaveFilePicker({suggestedName:name,types:[{description:desc,accept:{[mime]:[ext]}}]});
+  const w=await h.createWritable();await w.write(blob);await w.close();return true}catch(e){if(e.name==='AbortError')return false}}
+ dl(name,blob,mime);return true}
+function saveDlg(title,prev,info,name,blob,mime,ext,desc){
+ $('mt').textContent=title;$('mp').innerHTML='';$('mp').appendChild(prev);$('mi').textContent=info+' Нажмите «Сохранить как…», чтобы выбрать папку и имя файла.';
+ $('md').style.display='flex';$('ms').onclick=async()=>{if(await saveBlob(name,blob,mime,ext,desc))mClose()}}
+const pre=t=>{const p=document.createElement('pre');p.textContent=t;return p};
+function expG(){if(!P.length)return alert('Древо пусто');const t=gedcom(),l=t.split('\n');
+ saveDlg('Экспорт в GEDCOM',pre(l.slice(0,40).join('\n')+(l.length>40?'\n…':'')),`Людей: ${P.length}. Файл .ged, UTF-8.`,'family-tree.ged',new Blob([t],{type:'text/plain'}),'text/plain','.ged','Файл GEDCOM')}
+function saveF(){if(!P.length)return alert('Древо пусто');
+ saveDlg('Сохранение проекта',pre(P.map(full).slice(0,60).join('\n')+(P.length>60?'\n…':'')),`Людей: ${P.length}. Файл проекта .json (с фотографиями).`,'family-tree.json',new Blob([JSON.stringify(P)],{type:'application/json'}),'application/json','.json','Проект древа')}
+function openF(){const i=document.createElement('input');i.type='file';i.accept='.json';
+ i.onchange=async()=>{try{P=JSON.parse(await i.files[0].text());mig();store();newP()}catch{alert('Не удалось прочитать файл')}};i.click()}
+function pdfFromJpeg(bytes,iw,ih,pw,ph){const enc=new TextEncoder(),parts=[],off=[];let len=0;
+ const add=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+ const obj=(n,body)=>{off[n]=len;add(`${n} 0 obj\n${body}\nendobj\n`)};
+ add('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+ obj(3,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>`);
+ const cs=`q ${pw} 0 0 ${ph} 0 0 cm /Im0 Do Q`;obj(4,`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`);
+ off[5]=len;add(`5 0 obj\n<< /Type /XObject /Subtype /Image /Width ${iw} /Height ${ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.length} >>\nstream\n`);add(bytes);add('\nendstream\nendobj\n');
+ const xr=len;let t='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)t+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+ add(t+`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);return new Blob(parts,{type:'application/pdf'})}
+async function expP(){if(!P.length)return alert('Древо пусто');
+ const keep=sel;sel=null;render(true);const A=LAY;sel=keep;render();
+ const pad=40,lw=A.w+2*pad,lh=A.h+2*pad,S=Math.min(2,12000/Math.max(lw,lh),Math.sqrt(9e7/(lw*lh))),FN="'Segoe UI',system-ui,sans-serif";
+ const cv=document.createElement('canvas');cv.width=Math.ceil(lw*S);cv.height=Math.ceil(lh*S);const g=cv.getContext('2d');
+ const load=src=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src});
+ g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
+ const orn=await load(ORN_URI);if(orn){const sz=Math.min(lw,lh)*.92*S;g.drawImage(orn,(cv.width-sz)/2,(cv.height-sz)/2,sz,sz)}
+ const imgs={};await Promise.all(A.vp.filter(p=>p.photo).map(async p=>imgs[p.id]=await load(p.photo)));
+ g.scale(S,S);g.translate(pad,pad);
+ g.lineCap='round';g.strokeStyle='rgba(91,91,214,.18)';g.lineWidth=10;A.LB.forEach(y=>{g.beginPath();g.moveTo(0,y);g.lineTo(A.w,y);g.stroke()});
+ g.lineCap='butt';A.LP.forEach(l=>{g.strokeStyle=l.st;g.lineWidth=l.w;g.setLineDash(l.dash?[5,4]:[]);g.stroke(new Path2D(l.d))});g.setLineDash([]);
+ const wrapT=(t,mw,ml)=>{const out=[];let cur='';for(const w of t.split(' ')){const tr=cur?cur+' '+w:w;if(g.measureText(tr).width<=mw)cur=tr;else{if(cur)out.push(cur);cur=w}}
+  if(cur)out.push(cur);if(out.length>ml){out.length=ml;out[ml-1]+='…'}
+  return out.map(l=>{while(l.length>1&&g.measureText(l).width>mw)l=l.slice(0,-2)+'…';return l})};
+ const rr=(x,y)=>{g.beginPath();g.roundRect(x,y,150,166,14)};
+ A.vp.forEach(p=>{const q=A.pos[p.id],cx=q.x+75,cy=q.y+46;
+  g.save();g.shadowColor='rgba(31,36,51,.14)';g.shadowBlur=10;g.shadowOffsetY=2;g.fillStyle='#fff';rr(q.x,q.y);g.fill();g.restore();
+  g.save();rr(q.x,q.y);g.clip();g.fillStyle=p.sex==='M'?'#8fb4ff':'#ff9fc0';g.fillRect(q.x,q.y,150,4);
+  g.save();g.beginPath();g.arc(cx,cy,32,0,7);g.clip();
+  if(imgs[p.id])g.drawImage(imgs[p.id],cx-32,cy-32,64,64);else{g.fillStyle='#e8eaf3';g.fillRect(cx-32,cy-32,64,64);g.fillStyle='#7a8094';g.font='24px '+FN;g.textAlign='center';g.textBaseline='middle';g.fillText('👤',cx,cy)}
+  g.restore();g.textAlign='center';g.textBaseline='alphabetic';g.fillStyle='#1f2433';g.font='bold 14px '+FN;
+  let y=q.y+86;wrapT(short(p),132,2).forEach(l=>{g.fillText(l,cx,y+13);y+=18.2});
+  const sn=wrapT(p.surname||'',132,1)[0]||'';if(sn){g.fillText(sn,cx,y+13);const w=g.measureText(sn).width;g.fillRect(cx-w/2,y+16,w,1.4)}y+=18.2;
+  g.font='12px '+FN;g.fillStyle='#7a8094';g.fillText(yr(p.birth)+(p.death?' – '+(yr(p.death)||'?'):''),cx,y+12);
+  if(p.death){g.fillStyle='#111';g.translate(q.x+16,q.y+17.5);g.rotate(-Math.PI/4);g.fillRect(-50,-4.5,100,9)}
+  g.restore()});
+ const url=cv.toDataURL('image/jpeg',.92),bin=atob(url.split(',')[1]),by=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)by[i]=bin.charCodeAt(i);
+ const k=Math.min(.75,14400/Math.max(lw,lh));
+ const im=new Image();im.src=url;saveDlg('Экспорт в PDF',im,`На странице ${A.vp.length} чел. Свёрнутые ветви не включаются.`,'family-tree.pdf',pdfFromJpeg(by,cv.width,cv.height,Math.round(lw*k),Math.round(lh*k)),'application/pdf','.pdf','PDF-документ')}
+newP();
+const API=(window.FAMILY_TREE_CONFIG?.apiBase||'').replace(/\/$/,'');
+async function api(path,options={}){
+ if(!API)throw new Error('Адрес сервера не настроен.');
+ const response=await fetch(API+path,{credentials:'include',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});
+ let data={};try{data=await response.json()}catch{}
+ if(!response.ok){const error=new Error(data.error||'Ошибка связи с сервером.');error.status=response.status;error.data=data;throw error}
+ return data;
+}
+function authMessage(text){$('authmsg').textContent=text||'';$('syncStatus').textContent=text||'';$('syncStatus').style.display=text?'block':'none'}
+function signedIn(on){$('authgate').style.display=on?'none':'flex';$('signOut').style.display=on?'':'none';$('changePassword').style.display=on?'':'none';$('accountEmail').textContent=on?(cloudUser?.email||''):''}
+async function loadFamily(){
+ try{
+  const data=await api('/api/tree');cloudVersion=Number(data.version||1);P=Array.isArray(data.tree)?data.tree:[];mig();cloudDirty=false;newP();render();signedIn(true);$('inviteMember').style.display=cloudRole==='owner'?'':'none';authMessage('');
+  clearInterval(pollTimer);pollTimer=setInterval(pollTree,6000);
+ }catch(error){if(error.status===401){await handleSession(null);authMessage('Сеанс завершён. Войдите снова.')}else authMessage('Не удалось загрузить семейное древо. Проверьте подключение и обновите страницу.')}
+}
+async function pollTree(){
+ if(!cloudUser)return;
+ try{const data=await api('/api/tree');if(Number(data.version)===cloudVersion)return;
+  if(cloudDirty||cloudSaving){authMessage('Другой родственник уже изменил древо. Сохраните копию текущих изменений и обновите страницу перед продолжением.');return}
+  cloudVersion=Number(data.version);P=Array.isArray(data.tree)?data.tree:[];mig();render();authMessage('Получены изменения от родственника.');
+ }catch(error){if(error.status===401)await handleSession(null)}
+}
+async function saveCloud(){
+ if(!cloudUser||!cloudDirty||cloudSaving)return;cloudSaving=true;const snapshot=JSON.parse(JSON.stringify(P));
+ try{const data=await api('/api/tree',{method:'POST',body:JSON.stringify({tree:snapshot,expectedVersion:cloudVersion})});
+  cloudVersion=Number(data.version);cloudDirty=JSON.stringify(snapshot)!==JSON.stringify(P);if(cloudDirty){clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,150)}else authMessage('Изменения сохранены.');
+ }catch(error){if(error.status===409){cloudDirty=false;authMessage('Древо изменилось на другом устройстве. Обновите страницу, чтобы загрузить свежие данные.')}else authMessage(error.message||'Не удалось сохранить изменения.')}finally{cloudSaving=false}
+}
+async function handleSession(user){
+ if(!user){cloudUser=null;cloudRole='';lastLoadedUser=null;clearInterval(pollTimer);P=[];newP();render();signedIn(false);$('inviteMember').style.display='none';return}
+ cloudUser=user;cloudRole=user.role;if(lastLoadedUser===user.id)return;lastLoadedUser=user.id;authMessage('Загружаю семейное древо…');await loadFamily();
+}
+async function signOut(){try{await api('/api/auth/logout',{method:'POST'})}catch{}await handleSession(null)}
+function showInviteDialog(){if(cloudRole==='owner'){$('inviteMsg').textContent='';$('inviteForm').reset();$('inviteDialog').style.display='flex'}}
+function closeInviteDialog(){$('inviteDialog').style.display='none'}
+function showPasswordDialog(){$('passwordMsg').textContent='';$('passwordChangeForm').reset();$('passwordDialog').style.display='flex'}
+function closePasswordDialog(){$('passwordDialog').style.display='none'}
+function showInviteResult(text){$('inviteMsg').textContent=text}
+function initCloud(){
+ if(!API){authMessage('Адрес сервера не настроен.');return}
+ $('loginForm').onsubmit=async e=>{e.preventDefault();authMessage('Выполняется вход…');try{const data=await api('/api/auth/login',{method:'POST',body:JSON.stringify({email:$('loginEmail').value.trim(),password:$('loginPassword').value})});$('loginPassword').value='';await handleSession(data.user)}catch{$('loginPassword').value='';authMessage('Не удалось войти. Проверьте адрес почты и пароль.')}};
+ $('inviteForm').onsubmit=async e=>{e.preventDefault();if(cloudRole!=='owner')return;showInviteResult('Создаю аккаунт…');try{const data=await api('/api/owner/members',{method:'POST',body:JSON.stringify({email:$('inviteEmail').value,displayName:$('inviteName').value,password:$('invitePassword').value})});showInviteResult(`Аккаунт ${data.member.email} создан. Передайте данные для входа родственнику лично.`);$('invitePassword').value=''}catch(error){showInviteResult(error.message||'Не удалось создать аккаунт.')}};
+ $('passwordChangeForm').onsubmit=async e=>{e.preventDefault();$('passwordMsg').textContent='Сохраняю…';try{await api('/api/auth/password',{method:'POST',body:JSON.stringify({oldPassword:$('oldPassword').value,newPassword:$('newPassword').value})});$('passwordMsg').textContent='Пароль изменён.';$('oldPassword').value='';$('newPassword').value='';setTimeout(closePasswordDialog,1000)}catch(error){$('passwordMsg').textContent=error.message||'Не удалось сменить пароль.'}};
+ api('/api/auth/session').then(data=>handleSession(data.user)).catch(()=>authMessage('Сервер пока недоступен. Попробуйте позже.'));
+}
+initCloud();
+</script></body></html>

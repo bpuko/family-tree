@@ -1,0 +1,8 @@
+[Unit]
+Description=Backup family tree database
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash /opt/family-tree/server/backup.sh
